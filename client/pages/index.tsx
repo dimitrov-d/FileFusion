@@ -8,13 +8,15 @@ const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
   return (
-    <div className={`${inter.className}  w-full`}>
-      <Navbar />
-      <StarsCanvas />
+    <main className="h-full w-full ">
+      <div className="flex flex-col gap-20">
+        <Navbar />
+        <StarsCanvas />
 
-      <div className='pt-6'>
-        <Hero />
+        <div className="pt-6">
+          <Hero />
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
