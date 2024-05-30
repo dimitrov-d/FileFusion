@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router'; // Import useRouter for navigation
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
 import { ClipLoader } from 'react-spinners';
 import { useAuth } from '@/context/AuthContext';
 
@@ -7,8 +7,8 @@ const ConnectBtn = () => {
   const [loading, setLoading] = useState(false);
   const { email, setEmail, setIsAuthenticated } = useAuth();
   const router = useRouter();
-  let oAuthWindow: Window | null = null;
-  let oAuthInterval: NodeJS.Timeout | null = null;
+  const oAuthWindow = useRef<Window | null>(null);
+  const oAuthInterval = useRef<NodeJS.Timeout | null>(null);
 
   const getAuthToken = async (): Promise<string> => {
     const response = await fetch('http://localhost:3000/session-token', {
@@ -21,16 +21,16 @@ const ConnectBtn = () => {
   const openOAuthPopup = async () => {
     setLoading(true);
     const sessionToken = await getAuthToken();
-    oAuthWindow = window.open(
+    oAuthWindow.current = window.open(
       `https://oauth.apillon.io/?embedded=1&token=${sessionToken}`,
       'Apillon OAuth Form',
       `height=${900},width=${450},resizable=no`
     );
 
-    oAuthInterval = setInterval(() => {
-      if (oAuthWindow && oAuthWindow.closed) {
+    oAuthInterval.current = setInterval(() => {
+      if (oAuthWindow.current && oAuthWindow.current.closed) {
         setLoading(false);
-        clearInterval(oAuthInterval!);
+        clearInterval(oAuthInterval.current!);
       }
     }, 1000);
   };
@@ -50,8 +50,10 @@ const ConnectBtn = () => {
       localStorage.setItem('authToken', oAuthToken);
       setIsAuthenticated(!!data.email);
 
-      oAuthWindow?.close();
-      clearInterval(oAuthInterval!);
+      if (oAuthWindow.current) {
+        oAuthWindow.current.close();
+      }
+      clearInterval(oAuthInterval.current!);
       router.push('/');
     } catch (error) {
       console.error('Failed to verify user login:', error);
@@ -77,12 +79,17 @@ const ConnectBtn = () => {
 
     const token = localStorage.getItem('authToken');
     if (token) {
-      verifyUserLogin(token).catch(() => setIsAuthenticated(false));
+      verifyUserLogin(token).catch(() => {
+        localStorage.removeItem('authToken');
+        setIsAuthenticated(false);
+      });
     }
 
     return () => {
       window.removeEventListener('message', messageHandler, false);
-      clearInterval(oAuthInterval!);
+      if (oAuthInterval.current) {
+        clearInterval(oAuthInterval.current);
+      }
     };
   }, [setIsAuthenticated]);
 

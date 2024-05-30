@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import emailjs from 'emailjs-com';
+import { ClipLoader } from 'react-spinners';
 
 const UploadCard: React.FC = () => {
   const { email, isAuthenticated } = useAuth();
@@ -35,11 +37,49 @@ const UploadCard: React.FC = () => {
     }
 
     const result = await response.json();
-    console.log('result:', result);
-    
     const directories = result.data.directories || [];
 
     return directories.some((dir: any) => dir.path === directoryPath);
+  };
+
+  const fetchFiles = async (bucketUuid: string) => {
+    const url = `https://api.apillon.io/storage/buckets/${bucketUuid}/files`;
+    const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.data.items;
+  };
+
+  const pollForFileLink = async (bucketUuid: string, fileName: string) => {
+    const maxRetries = 10;
+    const delay = 6000;
+    let retries = 0;
+
+    while (retries < maxRetries) {
+      const files = await fetchFiles(bucketUuid);
+      const uploadedFile = files.find((f: any) => f.name === fileName);
+
+      if (uploadedFile && uploadedFile.link) {
+        return uploadedFile.link;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      retries += 1;
+    }
+
+    throw new Error('File link not found after maximum retries.');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +90,7 @@ const UploadCard: React.FC = () => {
       return;
     }
 
+    setLoading(true);
     const bucketUuid = process.env.NEXT_PUBLIC_BUCKET_UUID;
     const directoryPath = email;
 
@@ -127,8 +168,29 @@ const UploadCard: React.FC = () => {
       console.log(
         'File uploaded, synchronized to IPFS and Crust, and session ended successfully!'
       );
+
+      const fileLink = await pollForFileLink(bucketUuid ?? '', file.name);
+
+      const emailData = {
+        to_email: recipientEmail,
+        from_name: email,
+        message: `Hello,\n\n${message}\n\nYou can download the file using this link: ${fileLink}`,
+        title,
+        file_url: fileLink,
+      };
+
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        emailData,
+        process.env.NEXT_PUBLIC_EMAILJS_USER_ID!
+      );
+
+      console.log('Email sent successfully!');
     } catch (error) {
       console.error('Error during upload process:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -256,7 +318,7 @@ const UploadCard: React.FC = () => {
             }`}
             disabled={!isAuthenticated}
           >
-            Transfer
+            {loading ? <ClipLoader color="white" size={20} /> : 'Transfer'}
           </button>
         </div>
       </form>

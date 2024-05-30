@@ -61,7 +61,9 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
           >
             <div className="p-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-semibold text-[#3c087e]">Transfers</h2>
+                <h2 className="text-2xl font-semibold text-[#3c087e]">
+                  Transfers
+                </h2>
                 <button onClick={onClose} className="text-gray-600">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -81,15 +83,20 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
               </div>
               <div className="mt-4">
                 <div className="flex space-x-4">
-                  <button className="py-2 px-4 border-b-2 border-black font-semibold">Sent</button>
+                  <button className="py-2 px-4 border-b-2 border-black font-semibold">
+                    Sent
+                  </button>
                   <button className="py-2 px-4 font-semibold">Received</button>
                 </div>
                 <div className="mt-4">
-                  <div className="bg-purple-100 text-[#3c087e] p-4 rounded-lg flex justify-between items-center">
+                  <div className="bg-purple-100 text-[#3c087e] p-4 rounded-lg flex justify-between items-center w-full">
                     <span>
-                      Upgrade to receive with ease. Get a custom URL yourname.wetransfer.com and branded page for uploads.
+                      Upgrade to receive with ease. Get a custom URL
+                      y.
                     </span>
-                    <button className="bg-[#3c087e] text-white py-2 px-4 rounded-lg">Upgrade</button>
+                    <button className="bg-[#3c087e] text-white py-2 px-4 rounded-lg">
+                      Upgrade
+                    </button>
                   </div>
                   <div className="mt-4">
                     <h3 className="text-lg font-semibold">May 2024</h3>
@@ -97,7 +104,13 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
                       <FileCard
                         key={file.fileUuid}
                         title={file.name}
-                        description={`Not yet downloaded · ${file.size} BYTES · Sent ${new Date(file.createTime).toLocaleDateString()} · ${new Date(file.updateTime).toLocaleDateString()}`}
+                        description={`Not yet downloaded · ${
+                          file.size
+                        } BYTES · Sent ${new Date(
+                          file.createTime
+                        ).toLocaleDateString()} · ${new Date(
+                          file.updateTime
+                        ).toLocaleDateString()}`}
                         link={file.link}
                       />
                     ))}
