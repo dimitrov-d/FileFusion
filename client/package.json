@@ -11,7 +11,9 @@
   "dependencies": {
     "@react-three/drei": "^9.105.6",
     "@react-three/fiber": "^8.16.6",
-    "framer-motion": "^11.2.6",
+    "avvvatars-react": "^0.4.2",
+    "emailjs-com": "^3.2.0",
+    "framer-motion": "^11.2.9",
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",

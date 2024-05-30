@@ -1,7 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
+import { ClipLoader } from 'react-spinners';
+import { useAuth } from '@/context/AuthContext';
 
 const ConnectBtn = () => {
-  let oAuthWindow: Window | null = null;
+  const [loading, setLoading] = useState(false);
+  const { email, setEmail, setIsAuthenticated } = useAuth();
+  const router = useRouter();
+  const oAuthWindow = useRef<Window | null>(null);
+  const oAuthInterval = useRef<NodeJS.Timeout | null>(null);
 
   const getAuthToken = async (): Promise<string> => {
     const response = await fetch('http://localhost:3000/session-token', {
@@ -12,55 +19,88 @@ const ConnectBtn = () => {
   };
 
   const openOAuthPopup = async () => {
+    setLoading(true);
     const sessionToken = await getAuthToken();
-    oAuthWindow = window.open(
+    oAuthWindow.current = window.open(
       `https://oauth.apillon.io/?embedded=1&token=${sessionToken}`,
       'Apillon OAuth Form',
       `height=${900},width=${450},resizable=no`
     );
+
+    oAuthInterval.current = setInterval(() => {
+      if (oAuthWindow.current && oAuthWindow.current.closed) {
+        setLoading(false);
+        clearInterval(oAuthInterval.current!);
+      }
+    }, 1000);
+  };
+
+  const verifyUserLogin = async (oAuthToken: string) => {
+    try {
+      const response = await fetch(`http://localhost:3000/verify-login`, {
+        method: 'POST',
+        body: JSON.stringify({ token: oAuthToken }),
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+      });
+      if (!response.ok) {
+        throw new Error('Invalid token');
+      }
+      const { data } = await response.json();
+      setEmail(data.email);
+      localStorage.setItem('authToken', oAuthToken);
+      setIsAuthenticated(!!data.email);
+
+      if (oAuthWindow.current) {
+        oAuthWindow.current.close();
+      }
+      clearInterval(oAuthInterval.current!);
+      router.push('/');
+    } catch (error) {
+      console.error('Failed to verify user login:', error);
+      localStorage.removeItem('authToken');
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     const messageHandler = async (event: MessageEvent) => {
       if (!event.origin?.includes('apillon.io')) return;
       if (!event.data.verified) {
+        setLoading(false);
         throw new Error('Invalid verification');
       }
-
-      oAuthWindow?.close();
 
       await verifyUserLogin(event.data.authToken);
     };
 
     window.addEventListener('message', messageHandler, false);
 
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      verifyUserLogin(token).catch(() => {
+        localStorage.removeItem('authToken');
+        setIsAuthenticated(false);
+      });
+    }
+
     return () => {
       window.removeEventListener('message', messageHandler, false);
+      if (oAuthInterval.current) {
+        clearInterval(oAuthInterval.current);
+      }
     };
-  }, []);
-
-  const verifyUserLogin = async (oAuthToken: string) => {
-    const response = await fetch(`http://localhost:3000/verify-login`, {
-      method: 'POST',
-      body: JSON.stringify({ token: oAuthToken }),
-      headers: new Headers({ 'Content-Type': 'application/json' }),
-    });
-    const { data } = await response.json();
-    // Handle user email data response here
-    console.log({ email: data.email });
-    const emailElement = document.getElementById('email');
-    if (emailElement) {
-      emailElement.innerHTML = `Success! Email: ${data.email}`;
-    }
-  };
+  }, [setIsAuthenticated]);
 
   return (
     <div>
       <button
         onClick={openOAuthPopup}
-        className="flex w-[100px] items-center justify-center text-center bg-black text-white border-primer rounded-lg text-sm font-bold h-8 ml-3  transition-all cursor-pointer"
+        className="flex w-[100px] items-center justify-center text-center bg-black text-white border-primer rounded-lg text-sm font-bold h-8 ml-3 transition-all cursor-pointer"
+        disabled={loading}
       >
-        Connect
+        {loading ? <ClipLoader color="white" size={20} /> : 'Connect'}
       </button>
     </div>
   );
