@@ -216,9 +216,9 @@ const UploadCard: React.FC = () => {
           </div>
           <span className="font-semibold text-gray-100">Upload files</span>
         </div>
-        <a href="#" className="text-sm text-gray-100 underline ml-6">
+        {/* <a href="#" className="text-sm text-gray-100 underline ml-6">
           Or select a folder
-        </a>
+        </a> */}
       </div>
       <div className="bg-[#03001436] p-2 rounded-lg mb-4 text-center">
         <p className="text-xs text-white">
@@ -285,7 +285,7 @@ const UploadCard: React.FC = () => {
           <label className="block text-sm text-gray-100">Select File</label>
           <input
             type="file"
-            className="w-full border border-gray-500 rounded-md p-2 bg-[#03001436]"
+            className="w-full border border-gray-500 rounded-md p-2 bg-[#03001436] text-gray-300"
             onChange={handleFileChange}
           />
         </div>
