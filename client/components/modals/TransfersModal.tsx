@@ -86,7 +86,7 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
                   <button className="py-2 px-4 border-b-2 border-black font-semibold">
                     Sent
                   </button>
-                  <button className="py-2 px-4 font-semibold">Received</button>
+                  {/* <button className="py-2 px-4 font-semibold">Received</button> */}
                 </div>
                 <div className="mt-4">
                   <div className="bg-purple-100 text-[#3c087e] p-4 rounded-lg flex justify-between items-center w-full">
