@@ -37,11 +37,22 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
       }
 
       const result = await response.json();
-      console.log('Fetched files:', result.data.items);
-      setUserFiles(result.data.items);
+      const uniqueFiles = filterUniqueFiles(result.data.items);
+      console.log('Fetched files:', uniqueFiles);
+      setUserFiles(uniqueFiles);
     } catch (error) {
       console.error('Error fetching files:', error);
     }
+  };
+
+  const filterUniqueFiles = (files: FileInfo[]) => {
+    const uniqueFilesMap = new Map();
+    files.forEach((file) => {
+      if (!uniqueFilesMap.has(file.name)) {
+        uniqueFilesMap.set(file.name, file);
+      }
+    });
+    return Array.from(uniqueFilesMap.values());
   };
 
   return (
@@ -91,11 +102,10 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
                 <div className="mt-4">
                   <div className="bg-purple-100 text-[#3c087e] p-4 rounded-lg flex justify-between items-center w-full">
                     <span>
-                      Upgrade to receive with ease. Get a custom URL
-                      y.
+                      Files are pinned to IPFS via CRUST Network and Apillon
                     </span>
-                    <button className="bg-[#3c087e] text-white py-2 px-4 rounded-lg">
-                      Upgrade
+                    <button className="bg-[#3c087e] text-white py-2 px-4 rounded-lg text-xs">
+                      Learn More
                     </button>
                   </div>
                   <div className="mt-4">
@@ -104,7 +114,7 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
                       <FileCard
                         key={file.fileUuid}
                         title={file.name}
-                        description={`Not yet downloaded · ${
+                        description={`- File uploaded · ${
                           file.size
                         } BYTES · Sent ${new Date(
                           file.createTime

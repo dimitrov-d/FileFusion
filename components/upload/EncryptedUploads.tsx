@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import emailjs from 'emailjs-com';
 import { ClipLoader } from 'react-spinners';
 import Image from 'next/image';
+import SuccessModal from '../modals/SuccessModal';
+import { toast } from 'react-toastify';
 
 const EncryptedUpload: React.FC = () => {
   const { email, isAuthenticated } = useAuth();
@@ -11,9 +12,9 @@ const EncryptedUpload: React.FC = () => {
   const [targetWalletAddress, setTargetWalletAddress] = useState('');
   const [message, setMessage] = useState('');
   const [nftId, setNftId] = useState<string | number>('');
+  const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const collectionUUID = process.env.NEXT_PUBLIC_COLLECTION_UUID;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -191,23 +192,47 @@ const EncryptedUpload: React.FC = () => {
       console.log('CID assigned to NFT successfully!');
 
       const emailData = {
-        email: email,
-        title: 'Encrypted File',
-        // message: `Hello,\n\n${message}\n\nYou can download the file using this link`,
+        to: recipientEmail,
+        from: email,
+        fromName: 'FileFusion',
+        subject: '[FileFusion] You have a new encrypted file!',
+        text: `Hello,\n\n${message}\n\nYou can download the file using this link`,
+        templateName: 'encrypted',
+        link: 'https://file-fusion-decrypt.vercel.app',
+        nftId: `#${nftId}`,
         targetWalletAddress,
-        link: link,
       };
 
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-        process.env.NEXT_PUBLIC_EMAILJS_ENCRYPTED_TEMPLATE_ID!,
-        emailData,
-        process.env.NEXT_PUBLIC_EMAILJS_USER_ID!
-      );
+      const emailResponse = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData),
+      });
 
+      if (!emailResponse.ok) {
+        throw new Error('Email sending failed.');
+      }
+
+      setRecipientEmail('');
+      setNftId('');
+      setMessage('');
+      setFile(null);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      setShowModal(true);
       console.log('Email sent successfully!');
     } catch (error) {
       console.error('Error during upload process:', error);
+      toast.error('An error occurred. Please try again.', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+      });
     } finally {
       setLoading(false);
     }
@@ -291,7 +316,7 @@ const EncryptedUpload: React.FC = () => {
           </label>
           <input
             type="text"
-            className="w-full border border-gray-500 rounded-md p-2 bg-[#03001436] text-white placeholder:text-xs"
+            className="w-full border border-gray-500 rounded-md text-sm p-2 bg-[#03001436] text-white placeholder:text-xs"
             placeholder="0x3d61594..."
             value={targetWalletAddress}
             onChange={(e) => setTargetWalletAddress(e.target.value)}
@@ -358,6 +383,7 @@ const EncryptedUpload: React.FC = () => {
           </button>
         </div>
       </form>
+      <SuccessModal isOpen={showModal} onClose={() => setShowModal(false)} />
     </div>
   );
 };

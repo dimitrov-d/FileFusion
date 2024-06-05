@@ -1,11 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import emailjs from 'emailjs-com';
 import { ClipLoader } from 'react-spinners';
 import { toast } from 'react-toastify';
 import { LuSwitchCamera } from 'react-icons/lu';
 import Image from 'next/image';
-import SuccessModal from '../modal/SuccessModal';
+import SuccessModal from '../modals/SuccessModal';
 
 const TransferUploadCard: React.FC = () => {
   const { email, isAuthenticated, privateMode } = useAuth();
@@ -91,10 +90,15 @@ const TransferUploadCard: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!file) {
-      alert('Please select a file to upload.');
+    if (!file || !recipientEmail) {
+      toast.error('Please select a file and enter a recipient email.', {});
       return;
     }
+
+    // if (!file) {
+    //   alert('Please select a file to upload.');
+    //   return;
+    // }
 
     setLoading(true);
     const bucketUuid = process.env.NEXT_PUBLIC_BUCKET_UUID;
@@ -178,17 +182,29 @@ const TransferUploadCard: React.FC = () => {
       const fileLink = await pollForFileLink(bucketUuid ?? '', file.name);
 
       const emailData = {
-        email: email,
-        title: 'a file',
+        to: recipientEmail,
+        from: email,
+        fromName: 'FileFusion',
+        subject: 'Someone sent you a file via FileFusion',
+        text: `${message}\n\nFile link: ${fileLink}`,
         link: fileLink,
       };
 
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-        emailData,
-        process.env.NEXT_PUBLIC_EMAILJS_USER_ID!
-      );
+      const emailResponse = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData),
+      });
+
+      if (!emailResponse.ok) {
+        throw new Error('Email sending failed.');
+      }
+
+      if (!emailResponse.ok) {
+        throw new Error('Email sending failed.');
+      }
 
       toast.success('File uploaded and email sent successfully!', {
         position: 'top-right',

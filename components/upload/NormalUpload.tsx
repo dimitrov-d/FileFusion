@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { LuSwitchCamera } from 'react-icons/lu';
 import Image from 'next/image';
 import { IoCloudUploadOutline } from 'react-icons/io5';
-import UploadSuccessModal from '../modal/UploadSuccessModal';
+import UploadSuccessModal from '../modals/UploadSuccessModal';
 
 const NormalUpload: React.FC = () => {
   const { email, isAuthenticated } = useAuth();
