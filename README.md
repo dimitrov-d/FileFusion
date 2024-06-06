@@ -20,3 +20,15 @@
 
 
 ### <a name="features">🤖 Features</a>
+
+
+### <a name="features">🤖 How It Works</a>
+Filefusion has three modes.
+- **Storage Mode** - The storage mode works like a basic version of dropbox. Users can upload files and get a shareable link to access their uploaded files
+<img width="1440" alt="storage-mode" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/4f8abb5f-c8dd-4dd9-99bf-13d64fd1de2c">
+<img width="1440" alt="Screenshot 2024-06-06 at 11 07 37 PM" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/d8952145-202f-4b0d-9a04-0f56c7b4d1d6">
+
+- **Transfer Mode** - Transfer mode functions as a web3 version of Wetransfer. Files are uploaded and transfered to recipient's email
+<img width="1439" alt="transfer-mode" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/51cfc2b3-f90a-4e9e-b79b-b9e09ad39106">
+
+
