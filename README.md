@@ -19,10 +19,23 @@
 
 
 
-### <a name="features">🤖 Features</a>
+### <a name="tech-stack">🤖 Tech Stack</a>
+
+| Component                             | Technology/Service                                                                                                     |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Authentication**                    | [Apillon Auth API](https://wiki.apillon.io/web3-services/5-web3-authentication.html#authentication-workflow)                                                       |
+| **File Uploads**                    | [Apillon Storage API](https://wiki.apillon.io/build/2-storage-api.html)                                                                    |
+| **File Encryption / Decryption**| [Apillon Computing API](https://wiki.apillon.io/build/8-computing-api.html)                                                        |
+| **Decryption NFT Collection**              | [Apillon NFT API](https://wiki.apillon.io/build/4-nfts-api.html#mint-collection-nfts)                                               |
+| **Get Transferred / Uploaded Files**        | [Apillon Storage](https://wiki.apillon.io/build/2-storage-api.html#list-bucket-content)                                                                                  |                                                            |
+| **Decrypt encrypted file site**| [Template forked from Apillon Phala Demo](https://github.com/Apillon/apillon-phala-demo)                                                                      |
 
 
 ### <a name="features">🤖 How It Works</a>
+- **Sign in with KILT DID (using Sporran Wallet)**
+![Untitled design](https://github.com/Ghost-xDD/FileFusion/assets/42726051/f54bb99b-d331-48c3-abcc-fb11849bd691)
+
+
 Filefusion has three modes.
 - **Storage Mode** - The storage mode works like a basic version of dropbox. Users can upload files and get a shareable link to access their uploaded files
 <img width="1440" alt="storage-mode" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/4f8abb5f-c8dd-4dd9-99bf-13d64fd1de2c">
@@ -30,5 +43,13 @@ Filefusion has three modes.
 
 - **Transfer Mode** - Transfer mode functions as a web3 version of Wetransfer. Files are uploaded and transfered to recipient's email
 <img width="1439" alt="transfer-mode" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/51cfc2b3-f90a-4e9e-b79b-b9e09ad39106">
+
+- **Private Mode** - Files transferred using private mode are encrypted before they are uploaded and transferred to the recipient. User's get access to a decryption site in their email and only the wallet address with the designated NFT Key can access the file.
+  <img width="1440" alt="Screenshot 2024-06-10 at 4 18 07 PM" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/5e4a575b-55f7-49fc-8582-5f4a61081a07">
+
+
+- Access all of your files transferred and uploaded using FileFusion
+<img width="1440" alt="Screenshot 2024-06-10 at 4 16 17 PM" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/cede5957-0cfa-446b-bc10-9cd084ce9028">
+
 
 
