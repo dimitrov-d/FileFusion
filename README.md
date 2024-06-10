@@ -16,7 +16,7 @@
 
 
 
-### <a name="tech-stack">⚙️ Tech Stack</a>
+## <a name="tech-stack">⚙️ Tech Stack</a>
 
 | Component                             | Technology/Service                                                                                                     |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -29,7 +29,7 @@
 | **Email Sending Functioality**| [Nodemailer](https://www.npmjs.com/package/nodemailer)                                                                      |
 
 
-### <a name="features">🤖 How It Works</a>
+## <a name="features">🤖 How It Works</a>
 - **Sign in with KILT DID (using Sporran Wallet)**
 ![Untitled design](https://github.com/Ghost-xDD/FileFusion/assets/42726051/f54bb99b-d331-48c3-abcc-fb11849bd691)
 
