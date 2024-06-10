@@ -11,15 +11,12 @@
 
 1. ⚙️ [Tech Stack](#tech-stack)
 2. 🔋 [Features](#features)
-3. 🤸 [Quick Start](#quick-start)
-4. 🕸️ [Snippets](#snippets)
-5. 🔗 [Screenshots](#screenshots)
-6. 🚀 [More](#more)
+3. 🕸️ [Snippets](#snippets)
 
 
 
 
-### <a name="tech-stack">🤖 Tech Stack</a>
+### <a name="tech-stack">⚙️ Tech Stack</a>
 
 | Component                             | Technology/Service                                                                                                     |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -29,6 +26,7 @@
 | **Decryption NFT Collection**              | [Apillon NFT API](https://wiki.apillon.io/build/4-nfts-api.html#mint-collection-nfts)                                               |
 | **Get Transferred / Uploaded Files**        | [Apillon Storage](https://wiki.apillon.io/build/2-storage-api.html#list-bucket-content)                                                                                  |                                                            |
 | **Decrypt encrypted file site**| [Template forked from Apillon Phala Demo](https://github.com/Apillon/apillon-phala-demo)                                                                      |
+| **Email Sending Functioality**| [Nodemailer](https://www.npmjs.com/package/nodemailer)                                                                      |
 
 
 ### <a name="features">🤖 How It Works</a>
@@ -45,11 +43,36 @@ Filefusion has three modes.
 <img width="1439" alt="transfer-mode" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/51cfc2b3-f90a-4e9e-b79b-b9e09ad39106">
 
 - **Private Mode** - Files transferred using private mode are encrypted before they are uploaded and transferred to the recipient. User's get access to a decryption site in their email and only the wallet address with the designated NFT Key can access the file.
-  <img width="1440" alt="Screenshot 2024-06-10 at 4 18 07 PM" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/5e4a575b-55f7-49fc-8582-5f4a61081a07">
+<img width="1440" alt="Screenshot 2024-06-10 at 4 18 07 PM" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/5e4a575b-55f7-49fc-8582-5f4a61081a07">
 
 
 - Access all of your files transferred and uploaded using FileFusion
 <img width="1440" alt="Screenshot 2024-06-10 at 4 16 17 PM" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/cede5957-0cfa-446b-bc10-9cd084ce9028">
 
+#### Environment Variables
+- ```NEXT_PUBLIC_APILLON_CREDENTIALS=```
+- ```NEXT_PUBLIC_BUCKET_UUID=```
+- ```NEXT_PUBLIC_ENCRYPTED_BUCKET_UUID=```
+- ```NEXT_PUBLIC_COMPUTING_CONTRACT_UUID=```
+- ```NEXT_PUBLIC_COLLECTION_UUID=```
+- ```APILLON_API_KEY=```
+- ```APILLON_API_SECRET=```
+- ```EMAIL_USER=```
+- ```EMAIL_PASS=```
 
+### Clone the repository
+
+```git clone https://github.com/Ghost-xDD/FileFusion.git```
+
+### Navigate to the project directory
+
+`cd FileFusion`
+
+### Install dependencies
+
+`npm install`
+
+# Start the application
+
+`npm run dev`
 
