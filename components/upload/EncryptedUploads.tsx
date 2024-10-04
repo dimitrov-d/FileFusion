@@ -1,12 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { ClipLoader } from 'react-spinners';
 import Image from 'next/image';
 import SuccessModal from '../modals/SuccessModal';
 import { toast } from 'react-toastify';
+import helpers from '@/utils/helpers';
+import {Computing, Storage} from "@apillon/sdk";
+import {StorageBucket} from "@apillon/sdk/dist/modules/storage/storage-bucket";
 
-const EncryptedUpload: React.FC = () => {
-  const { email, isAuthenticated } = useAuth();
+interface EncryptedUploadProps {
+  storage: Storage;
+  bucket: StorageBucket;
+}
+
+const computing = new Computing({
+  key: process.env.NEXT_PUBLIC_APILLON_API_KEY,
+  secret: process.env.NEXT_PUBLIC_APILLON_API_SECRET,
+});
+
+const contract = computing.contract(process.env.NEXT_PUBLIC_COMPUTING_CONTRACT_UUID as string);
+
+const EncryptedUpload: React.FC<EncryptedUploadProps> = () => {
+  const { isAuthenticated } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [targetWalletAddress, setTargetWalletAddress] = useState('');
@@ -20,69 +35,6 @@ const EncryptedUpload: React.FC = () => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
     }
-  };
-
-  const encryptContent = async (content: string) => {
-    const url = `https://api.apillon.io/computing/contracts/${process.env.NEXT_PUBLIC_COMPUTING_CONTRACT_UUID}/encrypt`;
-    const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ content }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Encryption error! Status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    return result.data.encryptedContent;
-  };
-
-  const fetchFiles = async (bucketUuid: string) => {
-    const url = `https://api.apillon.io/storage/buckets/${bucketUuid}/files`;
-    const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    console.log('Files fetched:', result.data);
-    return result.data.items;
-  };
-
-  const pollForFileLink = async (bucketUuid: string, fileName: string) => {
-    const maxRetries = 10;
-    const delay = 6000;
-    let retries = 0;
-
-    while (retries < maxRetries) {
-      const files = await fetchFiles(bucketUuid);
-      const uploadedFile = files.find((f: any) => f.name === fileName);
-
-      if (uploadedFile && uploadedFile.CID) {
-        console.log('File link found:', uploadedFile);
-        return uploadedFile;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      retries += 1;
-    }
-
-    throw new Error('File link not found after maximum retries.');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,101 +51,38 @@ const EncryptedUpload: React.FC = () => {
     }
 
     setLoading(true);
-    const bucketUuid = process.env.NEXT_PUBLIC_ENCRYPTED_BUCKET_UUID;
 
     try {
-      const fileContent = await file.text();
-      const encryptedContent = await encryptContent(fileContent);
 
-      const url = `https://api.apillon.io/storage/buckets/${bucketUuid}/upload`;
-      const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
+      //const encryptedContent = await encryptContent(fileContent);
+      const buffer = await helpers.getFileBuffer(file) as Buffer;
 
-      const data = {
-        files: [
-          {
-            fileName: file.name,
-            contentType: file.type,
-          },
-        ],
-      };
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!contract) {
+        throw new Error('Contract not initialized.');
       }
 
-      const result = await response.json();
-      console.log('Session started:', result.data);
+      // @ts-ignore
+      const contractDetails = await contract.get();
+      console.log("contractDetails", contractDetails);
 
-      const fileUrl = result.data.files[0].url;
-      const sessionUuid = result.data.sessionUuid;
+      const encryptionResult = await contract.encryptFile({
+        fileName: file.name,
+        content: buffer,
+        nftId: nftId as number,
 
-      const fileResponse = await fetch(fileUrl, {
-        method: 'PUT',
-        body: new Blob([encryptedContent]),
       });
 
-      if (!fileResponse.ok) {
-        throw new Error(`File upload error! Status: ${fileResponse.status}`);
-      }
+     console.log("encryptionResult", encryptionResult);
 
-      const endSessionUrl = `https://api.apillon.io/storage/buckets/${bucketUuid}/upload/${sessionUuid}/end`;
-      const endSessionResponse = await fetch(endSessionUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!endSessionResponse.ok) {
-        throw new Error(
-          `End session error! Status: ${endSessionResponse.status}`
-        );
-      }
 
       console.log(
         'File uploaded, synchronized to IPFS and Crust, and session ended successfully!'
       );
 
-      const fileData = await pollForFileLink(bucketUuid ?? '', file.name);
-      const { CID, link } = fileData;
 
-      console.log('File link:', link);
-      console.log('CID:', CID);
-
-      const assignCidUrl = `https://api.apillon.io/computing/contracts/${process.env.NEXT_PUBLIC_COMPUTING_CONTRACT_UUID}/assign-cid-to-nft`;
-      const assignCidResponse = await fetch(assignCidUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          cid: CID,
-          nftId: Number(nftId),
-        }),
-      });
-
-      if (!assignCidResponse.ok) {
-        throw new Error(
-          `Assign CID to NFT error! Status: ${assignCidResponse.status}`
-        );
-      }
-
-      console.log('CID assigned to NFT successfully!');
-
-      const emailData = {
+      await helpers.sendEmail({
         to: recipientEmail,
-        from: email,
+        from: 'info@filefusion.com',
         fromName: 'FileFusion',
         subject: '[FileFusion] You have a new encrypted file!',
         text: `Hello,\n\n${message}\n\nYou can download the file using this link`,
@@ -201,19 +90,8 @@ const EncryptedUpload: React.FC = () => {
         link: 'https://file-fusion-decrypt.vercel.app',
         nftId: `#${nftId}`,
         targetWalletAddress,
-      };
-
-      const emailResponse = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(emailData),
       });
 
-      if (!emailResponse.ok) {
-        throw new Error('Email sending failed.');
-      }
 
       setRecipientEmail('');
       setNftId('');
@@ -285,32 +163,6 @@ const EncryptedUpload: React.FC = () => {
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-sm text-gray-100">Your email</label>
-          <div className="flex items-center border border-gray-500 rounded-md p-2 bg-[#03001436] text-white">
-            <input
-              type="email"
-              className="w-full bg-[#03001436]"
-              autoComplete="off"
-              value={email ?? ''}
-              readOnly
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="w-6 h-6 text-blue-600"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-        </div>
-        <div className="space-y-1">
           <label className="block text-sm text-gray-100">
             Target Wallet Address:
           </label>
@@ -377,7 +229,7 @@ const EncryptedUpload: React.FC = () => {
                 ? 'button-primary text-white cursor-pointer'
                 : 'bg-gray-800 text-gray-700 cursor-not-allowed'
             }`}
-            disabled={!isAuthenticated}
+            disabled={!isAuthenticated || loading}
           >
             {loading ? <ClipLoader color="white" size={20} /> : 'Transfer'}
           </button>

@@ -1,17 +1,23 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import emailjs from 'emailjs-com';
 import { ClipLoader } from 'react-spinners';
-import { toast } from 'react-toastify';
-import { LuSwitchCamera } from 'react-icons/lu';
-import Image from 'next/image';
 import { IoCloudUploadOutline } from 'react-icons/io5';
 import UploadSuccessModal from '../modals/UploadSuccessModal';
+import {Storage} from "@apillon/sdk";
+import helpers from "@/utils/helpers";
+import {toast} from "react-toastify";
+import {useAccount} from "wagmi";
+import {StorageBucket} from "@apillon/sdk/dist/modules/storage/storage-bucket";
 
-const NormalUpload: React.FC = () => {
-  const { email, isAuthenticated } = useAuth();
+interface NormalUploadProps {
+  storage: Storage;
+  bucket: StorageBucket;
+}
+
+const NormalUpload: React.FC<NormalUploadProps> = ({bucket, storage}) => {
+  const { isAuthenticated } = useAuth();
   const [file, setFile] = useState<File | null>(null);
-
+  const { address: connectedWalletAddress } = useAccount();
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showModal, setShowModal] = useState(false);
@@ -23,71 +29,6 @@ const NormalUpload: React.FC = () => {
     }
   };
 
-  const checkDirectoryExists = async (
-    bucketUuid: string,
-    directoryPath: string
-  ) => {
-    const url = `https://api.apillon.io/storage/buckets/${bucketUuid}/content`;
-    const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    const directories = result.data.directories || [];
-
-    return directories.some((dir: any) => dir.path === directoryPath);
-  };
-
-  const fetchFiles = async (bucketUuid: string) => {
-    const url = `https://api.apillon.io/storage/buckets/${bucketUuid}/files`;
-    const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    return result.data.items;
-  };
-
-  const pollForFileLink = async (bucketUuid: string, fileName: string) => {
-    const maxRetries = 10;
-    const delay = 6000;
-    let retries = 0;
-
-    while (retries < maxRetries) {
-      const files = await fetchFiles(bucketUuid);
-      const uploadedFile = files.find((f: any) => f.name === fileName);
-
-      if (uploadedFile && uploadedFile.link) {
-        return uploadedFile.link;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      retries += 1;
-    }
-
-    throw new Error('File link not found after maximum retries.');
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -97,97 +38,43 @@ const NormalUpload: React.FC = () => {
     }
 
     setLoading(true);
-    const bucketUuid = process.env.NEXT_PUBLIC_BUCKET_UUID;
-    const directoryPath = email;
+    const directoryPath = connectedWalletAddress;
+    const buffer = await helpers.getFileBuffer(file) as Buffer;
 
     try {
-      const directoryExists = await checkDirectoryExists(
-        bucketUuid ?? '',
-        directoryPath ?? ''
+      const response = await bucket.uploadFiles(
+          [
+            {
+              fileName: file.name,
+              contentType: file.type,
+              content: buffer,
+            },
+          ],
+          { wrapWithDirectory: true, directoryPath, awaitCid: true }
       );
 
-      if (!directoryExists) {
-        console.log('Directory does not exist. Creating a new one.');
-      } else {
-        console.log('Directory exists. Uploading file to existing directory.');
+      if (!response) {
+        throw new Error('File upload failed.');
       }
 
-      const url = `https://api.apillon.io/storage/buckets/${bucketUuid}/upload`;
-      const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
+      const fileCID = response[0].CID as string;
 
-      const data = {
-        files: [
-          {
-            fileName: file.name,
-            contentType: file.type,
-          },
-        ],
-        directoryPath: directoryPath,
-      };
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      if(!fileCID) {
+        throw new Error('File CID not found.');
       }
 
-      const result = await response.json();
-      const fileUrl = result.data.files[0].url;
-      const sessionUuid = result.data.sessionUuid;
+      const ipfsLink = await storage.generateIpfsLink(fileCID);
 
-      const fileResponse = await fetch(fileUrl, {
-        method: 'PUT',
-        body: file,
-      });
-
-      if (!fileResponse.ok) {
-        throw new Error(`File upload error! Status: ${fileResponse.status}`);
-      }
-
-      const endSessionUrl = `https://api.apillon.io/storage/buckets/${bucketUuid}/upload/${sessionUuid}/end`;
-      const endSessionResponse = await fetch(endSessionUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          wrapWithDirectory: true,
-          directoryPath: directoryPath,
-          syncToCrust: true,
-        }),
-      });
-
-      if (!endSessionResponse.ok) {
-        throw new Error(
-          `End session error! Status: ${endSessionResponse.status}`
-        );
-      }
-
-      console.log(
-        'File uploaded, synchronized to IPFS and Crust, and session ended successfully!'
-      );
-
-      const fileLink = await pollForFileLink(bucketUuid ?? '', file.name);
-
+      // Reset form
       setFile(null);
-
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-
-      setUploadedFileLink(fileLink);
+      setUploadedFileLink(ipfsLink);
       setShowModal(true);
-      console.log('File uploaded successfully!');
     } catch (error) {
       console.error('Error during upload process:', error);
+      toast.error('An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -242,7 +129,7 @@ const NormalUpload: React.FC = () => {
                 ? 'button-primary text-white cursor-pointer'
                 : 'bg-gray-800 text-gray-700 cursor-not-allowed'
             }`}
-            disabled={!isAuthenticated}
+            disabled={!isAuthenticated || loading}
           >
             {loading ? <ClipLoader color="white" size={20} /> : 'Upload'}
           </button>
