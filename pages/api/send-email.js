@@ -116,11 +116,10 @@ export default async function handler(req, res) {
     };
 
     const htmlTemplate = getEmailTemplate(templateName, templateData);
-    console.log(" process.env.EMAIL_USER", process.env.EMAIL_USER);
-    console.log(" process.env.EMAIL_PASS", process.env.EMAIL_PASS);
     const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
+      service: 'Gmail',
+      // host: 'smtp.ethereal.email',
+      // port: 587,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
