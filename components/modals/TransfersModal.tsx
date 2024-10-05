@@ -92,7 +92,7 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
                   animate={{ x: 0 }}
                   exit={{ x: '100%' }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className="bg-white w-1/2 max-h-[600px] shadow-lg ml-auto mr-4 rounded-xl overflow-y-auto modal-content"
+                  className="bg-white w-full md:w-1/2 max-h-[600px] shadow-lg ml-auto mr-4 rounded-xl overflow-y-auto modal-content"
               >
                 <div className="p-4">
                   <div className="flex justify-between items-center">

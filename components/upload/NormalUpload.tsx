@@ -81,7 +81,7 @@ const NormalUpload: React.FC<NormalUploadProps> = ({bucket, storage}) => {
   };
 
   return (
-    <div className="upload-card-gradient border-gray-500 border text-black p-6 rounded-lg shadow-lg  mx-auto z-[1000] transition-all duration-500 -mt-[120px]">
+    <div className="upload-card-gradient mt-0 border-gray-500 border text-black p-6 rounded-lg shadow-lg  mx-auto z-[1000] transition-all duration-500 -mt-[120px]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <div className="button-primary text-white rounded-full p-2">

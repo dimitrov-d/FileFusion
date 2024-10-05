@@ -28,7 +28,7 @@ const Main = () => {
     }
 
     return (
-        <div className="flex items-center justify-between mt-[120px] h-full px-20 w-full overflow-hidden pt-10">
+        <div className="flex flex-col-reverse md:flex-row items-center justify-between mt-[100px] md:mt-[120px] h-full px-[10px] md:px-20 w-full overflow-hidden pt-10">
             <div
                 className={`text-white  text-start p-6 rounded-2xl shadow-lg h-[40%] ${
                     privateMode ? 'mb-[300px]' : 'mb-[200px]'
@@ -66,21 +66,21 @@ const Main = () => {
                     Learn more
                 </button>
 
-                <div className="flex items-center mt-9 rounded-full border border-[#5a0fc8] w-full max-w-xl">
-                    <input
-                        type="email"
-                        placeholder="Send me a download link"
-                        className="flex-grow bg-transparent text-white text-lg px-4 py-2 rounded-full focus:outline-none placeholder-gray-500"
-                    />
-                    <button
-                        className="button-primary text-white font-semibold text-md px-6 py-2 rounded-full flex items-center transition-transform transform hover:scale-105">
-                        Email me
-                        <span className="ml-2">→</span>
-                    </button>
-                </div>
+                {/*<div className="flex items-center mt-9 rounded-full border border-[#5a0fc8] w-full max-w-xl">*/}
+                {/*    <input*/}
+                {/*        type="email"*/}
+                {/*        placeholder="Send me a download link"*/}
+                {/*        className="flex-grow bg-transparent text-white text-lg px-4 py-2 rounded-full focus:outline-none placeholder-gray-500"*/}
+                {/*    />*/}
+                {/*    <button*/}
+                {/*        className="button-primary text-white font-semibold text-md px-6 py-2 rounded-full flex items-center transition-transform transform hover:scale-105">*/}
+                {/*        Email me*/}
+                {/*        <span className="ml-2">→</span>*/}
+                {/*    </button>*/}
+                {/*</div>*/}
             </div>
 
-            <div className="flex gap-12 ">
+            <div className="flex gap-12  mb-[50px] md:mb-[0px]">
                 <div className="pt-4">
                     <UploadComponent bucket={bucket} storage={storage}/>
                 </div>

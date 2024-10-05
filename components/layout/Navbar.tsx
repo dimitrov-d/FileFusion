@@ -44,6 +44,7 @@ const Navbar = () => {
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
+        setIsDropdownOpen(false);
     };
 
     const handleCloseModal = () => {
@@ -82,34 +83,33 @@ const Navbar = () => {
     return (
         <div className="w-full h-[65px] fixed top-0 shadow-lg backdrop-blur-md z-50 px-4">
             <div className="w-full h-full flex flex-row items-center justify-between mx-auto mt-4">
-                <a href="#about-me" className="flex items-center pl-16">
+                <a className="flex items-center pl-0 md:pl-16">
                     <GiChaingun className="text-2xl lg:text-3xl text-gray-300"/>
-                    <span className="font-bold text-sm lg:text-lg hidden lg:block text-gray-300 ml-2">
+                    <span className="font-bold text-sm lg:text-lg lg:block text-gray-300 ml-2">
               FileFusion
             </span>
                 </a>
 
-                <div className="hidden lg:flex w-auto h-full items-center justify-between mr-20">
+                <div className=" lg:flex w-auto h-full  items-center justify-between md:mr-20">
                     <div
                         className="flex items-center justify-between w-full h-auto bg-[#03001436] px-4 py-2 text-sm rounded-full text-gray-200 gap-10">
                         {isAuthenticated && (
-                            <a className="cursor-pointer" onClick={handleOpenModal}>
-                                Transfers
+                            <a className="hidden md:flex cursor-pointer" onClick={handleOpenModal}>
+                                Transfer History
                             </a>
                         )}
 
-                        <a className="cursor-pointer">Contacts</a>
-                        <a className="cursor-pointer">Branding</a>
-                        <a className="cursor-pointer">Blog</a>
+                        {/*<a className="cursor-pointer">Contacts</a>*/}
+                        {/*<a className="cursor-pointer">Branding</a>*/}
+                        {/*<a className="cursor-pointer">Blog</a>*/}
                     </div>
                     <div className="relative ml-2">
                         {isAuthenticated && address ? (
                             <div>
                                 <div onClick={toggleDropdown} className="cursor-pointer">
                                     <button
-                                        style={{'width': '160px'}}
-                                        className="button-primary text-white font-semibold px-4 py-2 rounded-full shadow-md transition-transform transform hover:scale-105">
-                                        {ensName ?? truncateEthAddress(address)} </button>
+                                        className="button-primary flex align-center justify-center h-[30px] px-[10px] w-[130px]  md:w-[160px] md:h-[40px] text-white font-semibold px-4 py-2 rounded-full shadow-md transition-transform transform hover:scale-105">
+                                        <span className="text-sm md:text-base leading-[15px] ">{ensName ?? truncateEthAddress(address)}</span> </button>
                                     {/*<Avvvatars value={email ?? ''} />*/}
                                 </div>
                                 {isDropdownOpen && (
@@ -140,6 +140,9 @@ const Navbar = () => {
                                             onClick={() => handleToggleMode('transfer')}
                                         >
                                             Transfer Mode
+                                        </a>
+                                        <a className="md:hidden cursor-pointer px-4 py-2 text-sm hover:bg-[#bf97ff70] rounded-b-md cursor-pointer" onClick={handleOpenModal}>
+                                            Transfer History
                                         </a>
                                         <a
                                             onClick={async () => await disconnect()}
