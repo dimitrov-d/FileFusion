@@ -3,18 +3,13 @@ import { useAuth } from '@/context/AuthContext';
 import { ClipLoader } from 'react-spinners';
 import { IoCloudUploadOutline } from 'react-icons/io5';
 import UploadSuccessModal from '../modals/UploadSuccessModal';
-import {Storage} from "@apillon/sdk";
 import helpers from "@/utils/helpers";
 import {toast} from "react-toastify";
 import {useAccount} from "wagmi";
-import {StorageBucket} from "@apillon/sdk/dist/modules/storage/storage-bucket";
+import {useConnectModal} from "@rainbow-me/rainbowkit";
 
-interface NormalUploadProps {
-  storage: Storage;
-  bucket: StorageBucket;
-}
 
-const NormalUpload: React.FC<NormalUploadProps> = ({bucket, storage}) => {
+const NormalUpload: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const { address: connectedWalletAddress } = useAccount();
@@ -22,6 +17,7 @@ const NormalUpload: React.FC<NormalUploadProps> = ({bucket, storage}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showModal, setShowModal] = useState(false);
   const [uploadedFileLink, setUploadedFileLink] = useState('');
+  const {openConnectModal} = useConnectModal();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -31,6 +27,11 @@ const NormalUpload: React.FC<NormalUploadProps> = ({bucket, storage}) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isAuthenticated && openConnectModal) {
+      openConnectModal();
+      return;
+    }
 
     if (!file) {
       alert('Please select a file to upload.');
@@ -42,35 +43,34 @@ const NormalUpload: React.FC<NormalUploadProps> = ({bucket, storage}) => {
     const buffer = await helpers.getFileBuffer(file) as Buffer;
 
     try {
-      const response = await bucket.uploadFiles(
-          [
-            {
-              fileName: file.name,
-              contentType: file.type,
-              content: buffer,
-            },
-          ],
-          { wrapWithDirectory: true, directoryPath, awaitCid: true }
-      );
+      const response = await fetch('/api/apillon/upload-files', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type,
+          content: buffer,
+          directoryPath,
+        }),
+      });
 
-      if (!response) {
+        if (!response.ok) {
+            throw new Error('An error occurred.');
+        }
+
+      const data = await response.json();
+      // @ts-ignore
+      if(!data.ipfs_url) {
         throw new Error('File upload failed.');
       }
-
-      const fileCID = response[0].CID as string;
-
-      if(!fileCID) {
-        throw new Error('File CID not found.');
-      }
-
-      const ipfsLink = await storage.generateIpfsLink(fileCID);
-
       // Reset form
       setFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      setUploadedFileLink(ipfsLink);
+      setUploadedFileLink(data.ipfs_url);
       setShowModal(true);
     } catch (error) {
       console.error('Error during upload process:', error);
@@ -124,12 +124,8 @@ const NormalUpload: React.FC<NormalUploadProps> = ({bucket, storage}) => {
         <div className="flex justify-between items-center">
           <button
             type="submit"
-            className={`font-semibold px-6 py-2 rounded-full transition-colors w-[120px] ${
-              isAuthenticated
-                ? 'button-primary text-white cursor-pointer'
-                : 'bg-gray-800 text-gray-700 cursor-not-allowed'
-            }`}
-            disabled={!isAuthenticated || loading}
+            className={`font-semibold px-6 py-2 rounded-full transition-colors w-[120px] button-primary text-white cursor-pointer`}
+            disabled={loading}
           >
             {loading ? <ClipLoader color="white" size={20} /> : 'Upload'}
           </button>

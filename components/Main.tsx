@@ -4,16 +4,6 @@ import TransferUpload from './upload/TransferUpload';
 import EncryptedUpload from './upload/EncryptedUploads';
 import NormalUpload from './upload/NormalUpload';
 import {useAuth} from '@/context/AuthContext';
-import {LogLevel, Storage} from "@apillon/sdk";
-
-const storage = new Storage({
-    key: process.env.NEXT_PUBLIC_APILLON_API_KEY,
-    secret: process.env.NEXT_PUBLIC_APILLON_API_SECRET,
-    logLevel: LogLevel.VERBOSE,
-});
-
-const bucket = storage.bucket(process.env.NEXT_PUBLIC_APILLON_BUCKET_UUID as string);
-
 
 const Main = () => {
     const {privateMode, storageMode, transferMode} = useAuth();
@@ -66,23 +56,11 @@ const Main = () => {
                     Learn more
                 </button>
 
-                {/*<div className="flex items-center mt-9 rounded-full border border-[#5a0fc8] w-full max-w-xl">*/}
-                {/*    <input*/}
-                {/*        type="email"*/}
-                {/*        placeholder="Send me a download link"*/}
-                {/*        className="flex-grow bg-transparent text-white text-lg px-4 py-2 rounded-full focus:outline-none placeholder-gray-500"*/}
-                {/*    />*/}
-                {/*    <button*/}
-                {/*        className="button-primary text-white font-semibold text-md px-6 py-2 rounded-full flex items-center transition-transform transform hover:scale-105">*/}
-                {/*        Email me*/}
-                {/*        <span className="ml-2">→</span>*/}
-                {/*    </button>*/}
-                {/*</div>*/}
             </div>
 
             <div className="flex gap-12  mb-[50px] md:mb-[0px]">
                 <div className="pt-4">
-                    <UploadComponent bucket={bucket} storage={storage}/>
+                    <UploadComponent />
                 </div>
             </div>
 

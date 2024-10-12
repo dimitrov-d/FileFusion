@@ -18,20 +18,19 @@
 
 ## <a name="tech-stack">⚙️ Tech Stack</a>
 
-| Component                             | Technology/Service                                                                                                     |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **Authentication**                    | [Apillon Auth API](https://wiki.apillon.io/web3-services/5-web3-authentication.html#authentication-workflow)                                                       |
-| **File Uploads**                    | [Apillon Storage API](https://wiki.apillon.io/build/2-storage-api.html)                                                                    |
-| **File Encryption / Decryption**| [Apillon Computing API](https://wiki.apillon.io/build/8-computing-api.html)                                                        |
-| **Decryption NFT Collection**              | [Apillon NFT API](https://wiki.apillon.io/build/4-nfts-api.html#mint-collection-nfts)                                               |
-| **Get Transferred / Uploaded Files**        | [Apillon Storage](https://wiki.apillon.io/build/2-storage-api.html#list-bucket-content)                                                                                  |                                                            |
-| **Decrypt encrypted file site**| [Template forked from Apillon Phala Demo](https://github.com/Apillon/apillon-phala-demo)                                                                      |
-| **Email Sending Functioality**| [Nodemailer](https://www.npmjs.com/package/nodemailer)                                                                      |
+| Component                             | Technology/Service                                                                                     |
+| ------------------------------------- |--------------------------------------------------------------------------------------------------------|
+| **Authentication**                    | [RainbowKit](https://www.rainbowkit.com/) |
+| **File Uploads**                    | [Apillon SDK Storage](https://wiki.apillon.io/build/5-apillon-sdk.html#usage-example-1)                |
+| **File Encryption / Decryption**| [Apillon SDK Computing](https://wiki.apillon.io/build/5-apillon-sdk.html#usage-example-4)              |
+| **Get Transferred / Uploaded Files**        | [Apillon SDK Storage](https://wiki.apillon.io/build/5-apillon-sdk.html#usage-example-1)                |                                                            |
+| **Decrypt encrypted file site**| [Template forked from Apillon Phala Demo](https://github.com/Apillon/apillon-phala-demo)               |
+| **Email Sending Functioality**| [Nodemailer](https://www.npmjs.com/package/nodemailer)                                                 |
 
 
 ## <a name="features">🤖 How It Works</a>
-- **Sign in with KILT DID (using Sporran Wallet)**
-![Untitled design](https://github.com/Ghost-xDD/FileFusion/assets/42726051/f54bb99b-d331-48c3-abcc-fb11849bd691)
+- **Sign in with Wallet Connect (using Metamask, WalletConnect or Coinbase Wallet)**
+![Untitled design](https://i.ibb.co/7rGw6NW/Screenshot-2024-10-12-at-17-41-28.png)
 
 
 Filefusion has three modes.
@@ -49,12 +48,15 @@ Filefusion has three modes.
 - Access all of your files transferred and uploaded using FileFusion
 <img width="1440" alt="Screenshot 2024-06-10 at 4 16 17 PM" src="https://github.com/Ghost-xDD/FileFusion/assets/42726051/cede5957-0cfa-446b-bc10-9cd084ce9028">
 
+#### Wallet Connect Project ID
+
+Note: Every dApp that relies on WalletConnect now needs to obtain a projectId from [WalletConnect Cloud](https://cloud.walletconnect.com/). This is absolutely free and only takes a few minutes.
+Once you get the Project ID from WalletConnect Cloud, you can set it as an environment variable in your project.
+
 #### Environment Variables
-- ```NEXT_PUBLIC_APILLON_CREDENTIALS=```
-- ```NEXT_PUBLIC_BUCKET_UUID=```
-- ```NEXT_PUBLIC_ENCRYPTED_BUCKET_UUID=```
-- ```NEXT_PUBLIC_COMPUTING_CONTRACT_UUID=```
-- ```NEXT_PUBLIC_COLLECTION_UUID=```
+- ```NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=```
+- ```APILLON_COMPUTING_CONTRACT_UUID=```
+- ```APILLON_BUCKET_UUID=```
 - ```APILLON_API_KEY=```
 - ```APILLON_API_SECRET=```
 - ```EMAIL_USER=```

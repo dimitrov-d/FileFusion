@@ -1,18 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FileCard from '../cards/FileCard';
 import { FileInfo } from '../cards/types';
-import { Storage, LogLevel } from '@apillon/sdk';
 import { useAccount } from 'wagmi';
 import dayjs from 'dayjs';
-
-const storage = new Storage({
-  key: process.env.NEXT_PUBLIC_APILLON_API_KEY,
-  secret: process.env.NEXT_PUBLIC_APILLON_API_SECRET,
-  logLevel: LogLevel.VERBOSE,
-});
-
-const bucket = storage.bucket(process.env.NEXT_PUBLIC_APILLON_BUCKET_UUID as string);
 
 interface TransfersModalProps {
   isOpen: boolean;
@@ -23,10 +14,13 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
   const [userFiles, setUserFiles] = useState<FileInfo[]>([]);
   const { address } = useAccount();
   const [loading, setLoading] = useState(false);
+  const hasFetchedFiles = useRef(false);
+
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !hasFetchedFiles.current) {
       fetchFiles();
+      hasFetchedFiles.current = true; // Prevent multiple fetches
     }
   }, [isOpen]);
 
@@ -34,15 +28,19 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
     try {
       const directoryPath = address;
-      const allBucketFilesAndDirectories = await bucket.listObjects();
-      const directoryUuid = allBucketFilesAndDirectories.items.find((item) => item.type === 1 && item.name === directoryPath)?.uuid;
 
-      if(!directoryUuid) {
-        setUserFiles([]);
-        setLoading(false);
-        return;
-      }
-      const data = await bucket.listObjects({ directoryUuid });
+      const response = await fetch('/api/apillon/get-files', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          directoryPath,
+        }),
+      });
+
+      const {data} = await response.json();
+
       //@ts-ignore
       const uniqueFiles = filterUniqueFiles(data.items);
       setUserFiles(uniqueFiles);
