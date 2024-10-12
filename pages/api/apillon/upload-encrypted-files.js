@@ -30,10 +30,12 @@ export default async function handler(req, res) {
                         nftId
                     });
 
-            if (!response.fileName || !response.CID || !response.fileUuid) {
+            const responseData = response[0];
+
+            if (!responseData.fileName || !responseData.CID || !responseData.fileUuid) {
                 return res.status(500).json({ error: 'Failed to upload files' });
             }
-
+        
             res.status(200).json({response});
 
         } catch (error) {
