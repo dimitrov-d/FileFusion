@@ -53,23 +53,6 @@ export default async function handler(req, res) {
             console.error("Error uploading files:", error);
             res.status(500).json({error: 'Internal Server Error'});
         }
-    } else if (req.method === 'GET') {
-        const {directoryPath} = req.body;
-
-        if (!directoryPath) {
-            return res.status(400).json({error: 'Missing parameter directoryPath'});
-        }
-
-        const allBucketFilesAndDirectories = await bucket.listObjects();
-        const directoryUuid = allBucketFilesAndDirectories.items.find((item) => item.type === 1 && item.name === directoryPath)?.uuid;
-
-        if (!directoryUuid) {
-            return res.status(404).json({error: 'Directory not found'});
-        }
-
-        const data = await bucket.listObjects({directoryUuid});
-
-        res.status(200).json({data});
     } else {
         res.setHeader('Allow', ['POST']);
         res.status(405).json({error: 'Method Not Allowed'});
