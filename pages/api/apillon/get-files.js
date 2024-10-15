@@ -33,6 +33,8 @@ const handler = async (req, res) => {
         }
 
         try {
+            console.log("key", process.env.APILLON_API_KEY);
+            console.log("secret", process.env.APILLON_API_SECRET);
             const allBucketFilesAndDirectories = await bucket.listObjects();
             const directoryUuid = allBucketFilesAndDirectories.items.find(
                 (item) => item.type === 1 && item.name === directoryPath
