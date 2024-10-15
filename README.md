@@ -18,14 +18,14 @@
 
 ## <a name="tech-stack">⚙️ Tech Stack</a>
 
-| Component                             | Technology/Service                                                                                     |
-| ------------------------------------- |--------------------------------------------------------------------------------------------------------|
-| **Authentication**                    | [RainbowKit](https://www.rainbowkit.com/) |
-| **File Uploads**                    | [Apillon SDK Storage](https://wiki.apillon.io/build/5-apillon-sdk.html#usage-example-1)                |
-| **File Encryption / Decryption**| [Apillon SDK Computing](https://wiki.apillon.io/build/5-apillon-sdk.html#usage-example-4)              |
-| **Get Transferred / Uploaded Files**        | [Apillon SDK Storage](https://wiki.apillon.io/build/5-apillon-sdk.html#usage-example-1)                |                                                            |
-| **Decrypt encrypted file site**| [Template forked from Apillon Phala Demo](https://github.com/Apillon/apillon-phala-demo)               |
-| **Email Sending Functioality**| [Nodemailer](https://www.npmjs.com/package/nodemailer)                                                 |
+| Component                             | Technology/Service                                                                                                                |
+| ------------------------------------- |-----------------------------------------------------------------------------------------------------------------------------------|
+| **Authentication**                    | [RainbowKit](https://www.rainbowkit.com/) with [SIWE](https://login.xyz/) and [Iron Session](https://github.com/vvo/iron-session) |
+| **File Uploads**                    | [Apillon SDK Storage](https://wiki.apillon.io/build/5-apillon-sdk.html#usage-example-1)                                           |
+| **File Encryption / Decryption**| [Apillon SDK Computing](https://wiki.apillon.io/build/5-apillon-sdk.html#usage-example-4)                                         |
+| **Get Transferred / Uploaded Files**        | [Apillon SDK Storage](https://wiki.apillon.io/build/5-apillon-sdk.html#usage-example-1)                                           |                                                            |
+| **Decrypt encrypted file site**| [Template forked from Apillon Phala Demo](https://github.com/Apillon/apillon-phala-demo)                                          |
+| **Email Sending Functioality**| [Nodemailer](https://www.npmjs.com/package/nodemailer)                                                                            |
 
 
 ## <a name="features">🤖 How It Works</a>
@@ -50,8 +50,14 @@ Filefusion has three modes.
 
 #### Wallet Connect Project ID
 
-Note: Every dApp that relies on WalletConnect now needs to obtain a projectId from [WalletConnect Cloud](https://cloud.walletconnect.com/). This is absolutely free and only takes a few minutes.
+Note: Every dApp that relies on WalletConnect now needs to obtain a projectId (NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID) from [WalletConnect Cloud](https://cloud.walletconnect.com/). This is absolutely free and only takes a few minutes.
 Once you get the Project ID from WalletConnect Cloud, you can set it as an environment variable in your project.
+
+#### Iron Session Password
+Iron Session will encrypt the session with the given secret key (NEXT_IRON_PASSWORD)
+You can generate a secret key using this code on your terminal
+`openssl rand -hex 32` or go to https://generate-secret.now.sh/32
+
 
 #### Environment Variables
 - ```NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=```
@@ -61,6 +67,7 @@ Once you get the Project ID from WalletConnect Cloud, you can set it as an envir
 - ```APILLON_API_SECRET=```
 - ```EMAIL_USER=```
 - ```EMAIL_PASS=```
+- ```NEXT_IRON_PASSWORD=```
 
 ### Clone the repository
 

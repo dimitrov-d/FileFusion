@@ -48,7 +48,7 @@ const EncryptedUpload: React.FC = () => {
         try {
 
             const buffer = await helpers.getFileBuffer(file) as Buffer;
-
+            const base64Content = buffer.toString('base64');
 
             const response = await fetch('/api/apillon/upload-encrypted-files', {
                 method: 'POST',
@@ -57,7 +57,7 @@ const EncryptedUpload: React.FC = () => {
                 },
                 body: JSON.stringify({
                     fileName: file.name,
-                    content: buffer,
+                    content: base64Content,
                     nftId: nftId as number,
                 })
             });

@@ -5,10 +5,10 @@ import {ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ConnectWalletProvider from "../providers/ConnectWalletProvider";
 
-export default function App({Component, pageProps}: AppProps) {
+    export default function App({Component, pageProps}: AppProps) {
     return (
         <AuthProvider>
-            <ConnectWalletProvider>
+            <ConnectWalletProvider {...pageProps}>
                 <ToastContainer theme="dark"/>
                 <Component {...pageProps} />
             </ConnectWalletProvider>

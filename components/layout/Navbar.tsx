@@ -3,16 +3,13 @@ import {GiChaingun} from 'react-icons/gi';
 import ConnectButton from '../connect/ConnectButton';
 import {useAuth} from '@/context/AuthContext';
 import TransfersModal from '../modals/TransfersModal';
-//import { disconnect } from '@wagmi/core'
-import config from '@/providers/wagmiConfig';
-import {useAccount, useAccountEffect, useDisconnect} from "wagmi";
+import {useAccount, useDisconnect} from "wagmi";
 import {useEnsName} from 'wagmi'
 import truncateEthAddress from 'truncate-eth-address';
 
 const Navbar = () => {
     const {
         isAuthenticated,
-        setIsAuthenticated,
         setPrivateMode,
         privateMode,
         storageMode,
@@ -27,16 +24,6 @@ const Navbar = () => {
         address: address,
     })
 
-    useAccountEffect({
-        onConnect(data) {
-            setIsAuthenticated(true);
-        },
-        onDisconnect() {
-            handleToggleMode('transfer');
-            setIsAuthenticated(false);
-
-        }
-    })
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 

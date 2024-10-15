@@ -27,16 +27,11 @@ const TransfersModal: React.FC<TransfersModalProps> = ({ isOpen, onClose }) => {
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      const directoryPath = address;
-
       const response = await fetch('/api/apillon/get-files', {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          directoryPath,
-        }),
+        }
       });
 
       const {data} = await response.json();

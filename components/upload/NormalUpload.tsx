@@ -39,8 +39,8 @@ const NormalUpload: React.FC = () => {
     }
 
     setLoading(true);
-    const directoryPath = connectedWalletAddress;
     const buffer = await helpers.getFileBuffer(file) as Buffer;
+    const base64Content = buffer.toString('base64');
 
     try {
       const response = await fetch('/api/apillon/upload-files', {
@@ -51,8 +51,7 @@ const NormalUpload: React.FC = () => {
         body: JSON.stringify({
           fileName: file.name,
           contentType: file.type,
-          content: buffer,
-          directoryPath,
+          content: base64Content
         }),
       });
 

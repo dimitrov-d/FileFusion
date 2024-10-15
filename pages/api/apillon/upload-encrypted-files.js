@@ -1,4 +1,6 @@
 import {Computing} from "@apillon/sdk";
+import { ironOptions } from '@/lib/iron';
+import {withIronSessionApiRoute} from "iron-session/next/index";
 
 if (!process.env.APILLON_API_KEY || !process.env.APILLON_API_SECRET) {
     throw new Error('Apillon SDK credentials are not properly set');
@@ -15,7 +17,11 @@ const computing = new Computing({
 
 const contract = computing.contract(process.env.APILLON_COMPUTING_CONTRACT_UUID);
 
-export default async function handler(req, res) {
+const handler = async (req, res) => {
+    // Check if the user is authenticated
+    if (!req.session.siwe) {
+        return res.status(401).json({ error: 'Unauthorized: User is not authenticated.' });
+    }
     if (req.method === 'POST') {
         const { fileName, nftId, content } = req.body;
 
@@ -24,9 +30,10 @@ export default async function handler(req, res) {
         }
 
         try {
+            const bufferContent = Buffer.from(content, 'base64');
             const response = await contract.encryptFile({
                         fileName,
-                        content,
+                        content: bufferContent,
                         nftId
                     });
 
@@ -35,7 +42,7 @@ export default async function handler(req, res) {
             if (!responseData.fileName || !responseData.CID || !responseData.fileUuid) {
                 return res.status(500).json({ error: 'Failed to upload files' });
             }
-        
+
             res.status(200).json({response});
 
         } catch (error) {
@@ -47,3 +54,5 @@ export default async function handler(req, res) {
         res.status(405).json({ error: 'Method Not Allowed' });
     }
 }
+
+export default withIronSessionApiRoute(handler, ironOptions);
