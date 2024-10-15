@@ -1,6 +1,6 @@
 import {Computing} from "@apillon/sdk";
 import { ironOptions } from '@/lib/iron';
-import {withIronSessionApiRoute} from "iron-session/next/index";
+import { withIronSessionApiRoute } from 'iron-session/next';
 
 if (!process.env.APILLON_API_KEY || !process.env.APILLON_API_SECRET) {
     throw new Error('Apillon SDK credentials are not properly set');
