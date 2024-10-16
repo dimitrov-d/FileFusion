@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [privateMode, setPrivateMode] = useState<boolean>(false);
   const [storageMode, setStorageMode] = useState<boolean>(false);
-  const [transferMode, setTransferMode] = useState<boolean>(false);
+  const [transferMode, setTransferMode] = useState<boolean>(true);
 
   return (
     <AuthContext.Provider

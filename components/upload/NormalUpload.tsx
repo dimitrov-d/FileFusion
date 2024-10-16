@@ -1,21 +1,23 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import emailjs from 'emailjs-com';
 import { ClipLoader } from 'react-spinners';
-import { toast } from 'react-toastify';
-import { LuSwitchCamera } from 'react-icons/lu';
-import Image from 'next/image';
 import { IoCloudUploadOutline } from 'react-icons/io5';
 import UploadSuccessModal from '../modals/UploadSuccessModal';
+import helpers from "@/utils/helpers";
+import {toast} from "react-toastify";
+import {useAccount} from "wagmi";
+import {useConnectModal} from "@rainbow-me/rainbowkit";
+
 
 const NormalUpload: React.FC = () => {
-  const { email, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [file, setFile] = useState<File | null>(null);
-
+  const { address: connectedWalletAddress } = useAccount();
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showModal, setShowModal] = useState(false);
   const [uploadedFileLink, setUploadedFileLink] = useState('');
+  const {openConnectModal} = useConnectModal();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -23,73 +25,13 @@ const NormalUpload: React.FC = () => {
     }
   };
 
-  const checkDirectoryExists = async (
-    bucketUuid: string,
-    directoryPath: string
-  ) => {
-    const url = `https://api.apillon.io/storage/buckets/${bucketUuid}/content`;
-    const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    const directories = result.data.directories || [];
-
-    return directories.some((dir: any) => dir.path === directoryPath);
-  };
-
-  const fetchFiles = async (bucketUuid: string) => {
-    const url = `https://api.apillon.io/storage/buckets/${bucketUuid}/files`;
-    const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    return result.data.items;
-  };
-
-  const pollForFileLink = async (bucketUuid: string, fileName: string) => {
-    const maxRetries = 10;
-    const delay = 6000;
-    let retries = 0;
-
-    while (retries < maxRetries) {
-      const files = await fetchFiles(bucketUuid);
-      const uploadedFile = files.find((f: any) => f.name === fileName);
-
-      if (uploadedFile && uploadedFile.link) {
-        return uploadedFile.link;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      retries += 1;
-    }
-
-    throw new Error('File link not found after maximum retries.');
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isAuthenticated && openConnectModal) {
+      openConnectModal();
+      return;
+    }
 
     if (!file) {
       alert('Please select a file to upload.');
@@ -97,104 +39,48 @@ const NormalUpload: React.FC = () => {
     }
 
     setLoading(true);
-    const bucketUuid = process.env.NEXT_PUBLIC_BUCKET_UUID;
-    const directoryPath = email;
+    const buffer = await helpers.getFileBuffer(file) as Buffer;
+    const base64Content = buffer.toString('base64');
 
     try {
-      const directoryExists = await checkDirectoryExists(
-        bucketUuid ?? '',
-        directoryPath ?? ''
-      );
-
-      if (!directoryExists) {
-        console.log('Directory does not exist. Creating a new one.');
-      } else {
-        console.log('Directory exists. Uploading file to existing directory.');
-      }
-
-      const url = `https://api.apillon.io/storage/buckets/${bucketUuid}/upload`;
-      const credentials = process.env.NEXT_PUBLIC_APILLON_CREDENTIALS;
-
-      const data = {
-        files: [
-          {
-            fileName: file.name,
-            contentType: file.type,
-          },
-        ],
-        directoryPath: directoryPath,
-      };
-
-      const response = await fetch(url, {
+      const response = await fetch('/api/apillon/upload-files', {
         method: 'POST',
         headers: {
-          Authorization: `Basic ${credentials}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      const fileUrl = result.data.files[0].url;
-      const sessionUuid = result.data.sessionUuid;
-
-      const fileResponse = await fetch(fileUrl, {
-        method: 'PUT',
-        body: file,
-      });
-
-      if (!fileResponse.ok) {
-        throw new Error(`File upload error! Status: ${fileResponse.status}`);
-      }
-
-      const endSessionUrl = `https://api.apillon.io/storage/buckets/${bucketUuid}/upload/${sessionUuid}/end`;
-      const endSessionResponse = await fetch(endSessionUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${credentials}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          wrapWithDirectory: true,
-          directoryPath: directoryPath,
-          syncToCrust: true,
+          fileName: file.name,
+          contentType: file.type,
+          content: base64Content
         }),
       });
 
-      if (!endSessionResponse.ok) {
-        throw new Error(
-          `End session error! Status: ${endSessionResponse.status}`
-        );
+        if (!response.ok) {
+            throw new Error('An error occurred.');
+        }
+
+      const data = await response.json();
+      // @ts-ignore
+      if(!data.ipfs_url) {
+        throw new Error('File upload failed.');
       }
-
-      console.log(
-        'File uploaded, synchronized to IPFS and Crust, and session ended successfully!'
-      );
-
-      const fileLink = await pollForFileLink(bucketUuid ?? '', file.name);
-
+      // Reset form
       setFile(null);
-
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-
-      setUploadedFileLink(fileLink);
+      setUploadedFileLink(data.ipfs_url);
       setShowModal(true);
-      console.log('File uploaded successfully!');
     } catch (error) {
       console.error('Error during upload process:', error);
+      toast.error('An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="upload-card-gradient border-gray-500 border text-black p-6 rounded-lg shadow-lg  mx-auto z-[1000] transition-all duration-500 -mt-[120px]">
+    <div className="upload-card-gradient mt-0 border-gray-500 border text-black p-6 rounded-lg shadow-lg  mx-auto z-[1000] transition-all duration-500 -mt-[120px]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <div className="button-primary text-white rounded-full p-2">
@@ -237,12 +123,8 @@ const NormalUpload: React.FC = () => {
         <div className="flex justify-between items-center">
           <button
             type="submit"
-            className={`font-semibold px-6 py-2 rounded-full transition-colors w-[120px] ${
-              isAuthenticated
-                ? 'button-primary text-white cursor-pointer'
-                : 'bg-gray-800 text-gray-700 cursor-not-allowed'
-            }`}
-            disabled={!isAuthenticated}
+            className={`font-semibold px-6 py-2 rounded-full transition-colors w-[120px] button-primary text-white cursor-pointer`}
+            disabled={loading}
           >
             {loading ? <ClipLoader color="white" size={20} /> : 'Upload'}
           </button>

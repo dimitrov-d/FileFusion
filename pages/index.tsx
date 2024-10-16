@@ -1,8 +1,7 @@
-import Image from 'next/image';
 import { Inter } from 'next/font/google';
 import StarsCanvas from '@/components/StarBackground';
 import Navbar from '@/components/layout/Navbar';
-import Hero from '@/components/Hero';
+import Main from '@/components/Main';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -14,7 +13,7 @@ export default function Home() {
         <StarsCanvas />
 
         <div className="pt-6">
-          <Hero />
+          <Main />
         </div>
       </div>
     </main>
