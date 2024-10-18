@@ -63,7 +63,7 @@ const TransferUploadCard: React.FC = () => {
 
             await helpers.sendEmail({
                 to: recipientEmail,
-                from: 'info@filefusion.com',
+                from: 'info@apillon.io',
                 fromName: 'FileFusion',
                 subject: 'Someone sent you a file via FileFusion',
                 text: `${message}\n\nFile link: ${data.ipfs_url}`,

@@ -29,7 +29,7 @@ const handler = async (req, res) => {
 
         const directoryPath = req.session.siwe.address;
 
-        if (!fileName || !contentType || !content || !directoryPath) {
+        if (!fileName || !content || !directoryPath) {
             return res.status(400).json({error: 'Missing required fields'});
         }
 

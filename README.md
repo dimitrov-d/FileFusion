@@ -67,6 +67,7 @@ You can generate a secret key using this code on your terminal
 - ```APILLON_API_SECRET=```
 - ```EMAIL_USER=```
 - ```EMAIL_PASS=```
+- ```EMAIL_HOST=```
 - ```NEXT_IRON_PASSWORD=```
 
 ### Clone the repository

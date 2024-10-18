@@ -71,7 +71,7 @@ const EncryptedUpload: React.FC = () => {
 
             await helpers.sendEmail({
                 to: recipientEmail,
-                from: 'info@filefusion.com',
+                from: 'info@apillon.io',
                 fromName: 'FileFusion',
                 subject: '[FileFusion] You have a new encrypted file!',
                 text: `Hello,\n\n${message}\n\nYou can download the file using this link`,
