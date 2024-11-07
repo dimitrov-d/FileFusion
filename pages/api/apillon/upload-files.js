@@ -72,3 +72,10 @@ const handler = async (req, res) => {
 
 export default withIronSessionApiRoute(handler, ironOptions);
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '20mb',
+    },
+  },
+};
