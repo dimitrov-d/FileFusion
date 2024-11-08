@@ -70,8 +70,6 @@ const handler = async (req, res) => {
     }
 }
 
-export default withIronSessionApiRoute(handler, ironOptions);
-
 export const config = {
   api: {
     bodyParser: {
@@ -79,3 +77,5 @@ export const config = {
     },
   },
 };
+
+export default withIronSessionApiRoute(handler, ironOptions);
